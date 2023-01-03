@@ -1,0 +1,65 @@
+<script>
+$('#btn1').click(function() {
+    text= $('#exampleInputEmail1').val();
+    csrftoken=$('input[name=csrfmiddlewaretoken]').val();
+    mtdata={text_data:text,csrfmiddlewaretoken:csrftoken}
+    console.log("submit click");
+    output=""
+    $.ajax({
+        url: "{% url 'adddata' %}",
+        method: "POST",
+        data: mtdata,
+        success: function(data){
+            console.log(data.tasks_data);
+            if(data.status == 'success'){
+                x=data.tasks_data;
+
+                for(i=0; i<x.length; i++){
+                    output += "<tr> <th scope='row'>"+ (i+1) +"</th><td>"+ x[i].text +"</td><td><input type='button' value='Submit' class='btn btn-danger btn_del' data-sid='"+ x[i].id +"'></td></tr>"
+                }
+                $('#tbody').html(output);
+                $('#gjkkfhjfbjfjb').html(x.length)
+                $('form')[0].reset();
+            }
+            else if(data.status == 'empty_feald'){
+                alert('feald is empty');
+            }
+            else if(data.status == 'failed'){
+                alert('request failed. Please try again later');
+            }
+            else{
+                alert('failed');
+            }
+        },
+    });
+    
+});
+
+
+$("#tbody").on('click','.btn_del', function(){
+    let id= $(this).attr('data-sid');
+    mythis=this;
+    csrftoken=$('input[name=csrfmiddlewaretoken]').val();
+    mtdata={id:id,csrfmiddlewaretoken:csrftoken}
+    $.ajax({
+        url: "{% url 'delete' %}",
+        method: "POST",
+        data: mtdata,
+        success: function(data){
+            if(data.status == 'deleted'){
+                x=data.tasks_data;
+                $(mythis).closest('tr').remove();
+                $('#gjkkfhjfbjfjb').html(x.length)
+            }
+            else if(data.status == 'delete_failed'){
+                alert('failed to delete. Please try again later');
+            }
+
+        },
+
+    });
+
+});
+
+
+</script>
